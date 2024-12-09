@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<ctype.h>
-#include "headers.h"
+#include "cabeceras.h"
 
 #define LONGITUD_COMANDO 100
 
@@ -14,7 +14,7 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos);
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
               char *nombreantiguo, char *nombrenuevo);
 int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
-             EXT_DATOS *memdatos, char *nombre);
+             EXT_DATOS *memdatos, char *nombre)
 int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre,  FILE *fich);
@@ -46,7 +46,7 @@ int main()
      FILE *fent;
      
      // Lectura del fichero completo de una sola vez
-     //...
+     ...
      
      fent = fopen("particion.bin","r+b");
      fread(&datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fent);    
@@ -58,7 +58,7 @@ int main()
      memcpy(&ext_blq_inodos,(EXT_BLQ_INODOS *)&datosfich[2], SIZE_BLOQUE);
      memcpy(&memdatos,(EXT_DATOS *)&datosfich[4],MAX_BLOQUES_DATOS*SIZE_BLOQUE);
      
-     // Bucle de tratamiento de comandos
+     // Buce de tratamiento de comandos
      for (;;){
 		 do {
 		 printf (">> ");
@@ -69,7 +69,7 @@ int main()
             Directorio(&directorio,&ext_blq_inodos);
             continue;
             }
-         //...
+         ...
          // Escritura de metadatos en comandos rename, remove, copy     
          Grabarinodosydirectorio(&directorio,&ext_blq_inodos,fent);
          GrabarByteMaps(&ext_bytemaps,fent);
