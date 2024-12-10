@@ -46,7 +46,7 @@ int main()
      FILE *fent;
      
      // Lectura del fichero completo de una sola vez
-     //...
+     //?...
      
      fent = fopen("particion.bin","r+b");
      fread(&datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fent);    
@@ -69,7 +69,7 @@ int main()
             Directorio(&directorio,&ext_blq_inodos);
             continue;
             }
-         //...
+         //?...
          // Escritura de metadatos en comandos rename, remove, copy     
          Grabarinodosydirectorio(&directorio,&ext_blq_inodos,fent);
          GrabarByteMaps(&ext_bytemaps,fent);
