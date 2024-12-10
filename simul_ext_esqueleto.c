@@ -49,6 +49,10 @@ int main()
      //?...
      
      fent = fopen("particion.bin","r+b");
+     if (fent = NULL) {
+      perror("Error opening patricion file");
+      return 1;
+     }
      fread(&datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fent);    
      
      
@@ -56,7 +60,7 @@ int main()
      memcpy(&directorio,(EXT_ENTRADA_DIR *)&datosfich[3], SIZE_BLOQUE);
      memcpy(&ext_bytemaps,(EXT_BLQ_INODOS *)&datosfich[1], SIZE_BLOQUE);
      memcpy(&ext_blq_inodos,(EXT_BLQ_INODOS *)&datosfich[2], SIZE_BLOQUE);
-     memcpy(&memdatos,(EXT_DATOS *)&datosfich[4],MAX_BLOQUES_DATOS*SIZE_BLOQUE);
+     memcpy(&memdatos,(EXT_DATOS *)&datosfich[4], MAX_BLOQUES_DATOS*SIZE_BLOQUE);
      
      // Bucle de tratamiento de comandos
      for (;;){
