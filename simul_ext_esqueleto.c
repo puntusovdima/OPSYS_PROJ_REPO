@@ -9,7 +9,7 @@
 #define LONGITUD_COMANDO 100
 
 //let us begin with the first and most essential function
-//int ComprobarCommando(char *strcomando, char *orden, char *argumento1, char *argumento2);
+int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2);
 
 /*
 void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps);
@@ -35,11 +35,12 @@ void GrabarDatos(EXT_DATOS *memdatos, FILE *fich);
 
 int main()
 {
-   //user input variables (removed the weird structures)
+   //user input variables
    char raw[LONGITUD_COMANDO];
-   char *comando; //here we will allocate only the command
-   char *argumento1; //here the first arg
-   char *argumento2; //here the second arg
+   char comando[LONGITUD_COMANDO];
+   char argumento1[LONGITUD_COMANDO];
+   char argumento2[LONGITUD_COMANDO];
+
    //i see the implementation of 'orden' unnecessary
    /*
    unsigned long int m;
@@ -69,7 +70,7 @@ int main()
      
    // main loop
    for (;;){
-      //do {
+      do {
          //this is the user input right here
          fflush(stdin);
          printf (">> ");
@@ -80,9 +81,7 @@ int main()
          //removing the \n
          
          //parsing
-         comando = malloc(sizeof(char) * LONGITUD_COMANDO);
-         argumento1 = malloc(sizeof(char) * LONGITUD_COMANDO);
-         argumento2 = malloc(sizeof(char) * LONGITUD_COMANDO);
+
 
          char* tk = strtok(raw," ");
          int v = 0;
@@ -99,8 +98,9 @@ int main()
                break;
             }v++;
             tk = strtok(NULL," ");
-         } printf("%s %s %s",comando,argumento1,argumento2);
-      //} while (ComprobarCommando(comando,orden,argumento1,argumento2) != 0);
+         }
+      } while (ComprobarCommando(comando,argumento1,argumento2) != 1);
+         printf("command exists\n");
             /*if (strcmp(*orden,"dir")==0) {
                   Directorio(&directorio,&ext_blq_inodos);
                   continue;
@@ -121,28 +121,37 @@ int main()
                   fclose(fent);
                   return 0;
                }*/
+        //we free the user input
                
   }
 
-  //we free the user input
-  free(raw);
-  free(comando);
-  free(argumento1);
-  free(argumento2);
 }
 
-/*
-int ComprobarCommando(char *strcomando, char *orden, char *argumento1, char *argumento2)
+
+int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2)
 {
-   
    //we read the command and check
    //incase it doesnt match anything we just return a message
    //the while will keep asking until its !=0
    //and we return 0
    
-
-  int i;
-  char cmds[7][LONGITUD_COMANDO];
-  strcpy(cmds[0],"")
+   int i;
+   char cmds[8][LONGITUD_COMANDO]; //will basically be a table with all the cmds
+   strcpy(cmds[0],"info");
+   strcpy(cmds[1],"bytemaps");
+   strcpy(cmds[2],"dir");
+   strcpy(cmds[3],"rename");
+   strcpy(cmds[4],"print");
+   strcpy(cmds[5],"remove");
+   strcpy(cmds[6],"copy");
+   strcpy(cmds[7],"exit");
+   
+   for(i=0;i<8;i++){
+      if(strcmp(cmds[i],strcomando) == 0){
+         return 1;
+      }
+   }
+   printf("Syntax error the comand '%s' doesnt exist\n",strcomando);
+   return 0; //for the loop to proceed
 }
-*/
+
