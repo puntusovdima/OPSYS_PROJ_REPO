@@ -11,8 +11,10 @@
 //let us begin with the first and most essential function
 //int ComprobarCommando(char *strcomando, char *orden, char *argumento1, char *argumento2);
 
+// The second one will be the LeeSuperbloque Printbytemaps command
+
+//void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps);
 /*
-void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps);
 void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup);
 int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
               char *nombre);
@@ -41,9 +43,9 @@ int main()
    char *argumento1; //here the first arg
    char *argumento2; //here the second arg
    //i see the implementation of 'orden' unnecessary
-   /*
    unsigned long int m;
    EXT_SIMPLE_SUPERBLOCK ext_superblock;
+   /*
    EXT_BYTE_MAPS ext_bytemaps;
    EXT_BLQ_INODOS ext_blq_inodos;
    EXT_ENTRADA_DIR directorio[MAX_FICHEROS];
@@ -146,3 +148,10 @@ int ComprobarCommando(char *strcomando, char *orden, char *argumento1, char *arg
   strcpy(cmds[0],"")
 }
 */
+
+void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup){
+
+}
+
+void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps){}
+
