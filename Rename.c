@@ -28,14 +28,22 @@ int main()
     memcpy(&ext_blq_inodos, (EXT_BLQ_INODOS *)&datosfich[2], SIZE_BLOQUE);
     memcpy(directorio, (EXT_ENTRADA_DIR *)&datosfich[3], sizeof(directorio));
     // Directorio(directorio, &ext_blq_inodos);
+    char *text = "dkf";
+    printf("length of text: %d\n", strlen(text));
     Renombrar(directorio, &ext_blq_inodos, oldname, newname);
-    // printf("%d", ext_blq_inodos.blq_inodos[3].size_fichero);
+    //  printf("%d", ext_blq_inodos.blq_inodos[3].size_fichero);
     return 0;
 }
 
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
               char *nombreantiguo, char *nombrenuevo)
 {
+    if (strlen(nombreantiguo) > LEN_NFICH || strlen(nombrenuevo) > LEN_NFICH)
+    {
+        printf("Maximum filename length is %d!", LEN_NFICH);
+        return 1;
+    }
+
     EXT_ENTRADA_DIR *directorioStart = directorio;
     int name_exists = 0;
     while (directorio->dir_inodo != NULL_INODO)
@@ -49,7 +57,7 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
         }
         if (strcmp(existingname, nombreantiguo) == 0)
         {
-            //printf("The name exists\n");
+            printf("The name exists\n");
             name_exists = 1;
             break;
         }
@@ -81,7 +89,7 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
         directorio++;
     }
     strcpy(new_name_entry->dir_nfich, nombrenuevo);
-    //printf("new name: %s", new_name_entry->dir_nfich);
+    printf("new name: %s", new_name_entry->dir_nfich);
 }
 
 void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)

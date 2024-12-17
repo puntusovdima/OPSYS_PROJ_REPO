@@ -240,6 +240,12 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
               char *nombreantiguo, char *nombrenuevo)
 {
+
+   if (strlen(nombreantiguo) > (unsigned int)LEN_NFICH || strlen(nombrenuevo) > (unsigned int)LEN_NFICH)
+   {
+      printf("Maximum filename length is %d!\n", LEN_NFICH);
+      return 1;
+   }
    if (nombreantiguo[0] == '\0' || nombrenuevo[0] == '\0')
    {
       printf("Incorrect arguments, should be of type: rename <oldname> <newname>\n");
