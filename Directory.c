@@ -33,12 +33,11 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
     while (directorio->dir_inodo != NULL_INODO)
     {
         unsigned short int num_inode = directorio->dir_inodo;
-        if (num_inode == 2 || num_inode == NULL_INODO) {
+        if (num_inode == 2 || num_inode == NULL_INODO)
+        {
             directorio++;
             continue;
         }
-        if (num_inode == NULL_INODO)
-            return;
         printf("%s\t", directorio->dir_nfich);
         printf("size: %d\t", inodos->blq_inodos[num_inode].size_fichero);
         printf("inode: %d\t", directorio->dir_inodo);
@@ -46,7 +45,8 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
         printf("blocks: ");
         unsigned short int *num_block = &inodos->blq_inodos[num_inode].i_nbloque[0];
 
-        while(inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE) {
+        while (inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE)
+        {
             printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
             j++;
         }

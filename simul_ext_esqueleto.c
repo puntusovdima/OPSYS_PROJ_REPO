@@ -125,6 +125,11 @@ int main()
          Directorio(directorio, &ext_blq_inodos);
          continue;
       }
+      if (strcmp(comando, "rename") == 0)
+      {
+         Renombrar(directorio, &ext_blq_inodos, argumento1, argumento2);
+         continue;
+      }
       /*if (strcmp(*orden,"dir")==0) {
             Directorio(&directorio,&ext_blq_inodos);
             continue;
@@ -215,8 +220,6 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
          directorio++;
          continue;
       }
-      if (num_inode == NULL_INODO)
-         return;
       printf("%s\t", directorio->dir_nfich);
       printf("size: %d\t", inodos->blq_inodos[num_inode].size_fichero);
       printf("inode: %d\t", directorio->dir_inodo);
@@ -232,4 +235,60 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
       printf("\n");
       directorio++;
    }
+}
+
+int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+              char *nombreantiguo, char *nombrenuevo)
+{
+   if (nombreantiguo[0] == '\0' || nombrenuevo[0] == '\0')
+   {
+      printf("Incorrect arguments, should be of type: rename <oldname> <newname>\n");
+      return 1;
+   }
+   EXT_ENTRADA_DIR *directorioStart = directorio;
+   int name_exists = 0;
+   while (directorio->dir_inodo != NULL_INODO)
+   {
+      unsigned short int *num_inode = &directorio->dir_inodo;
+      char *existingname = directorio->dir_nfich;
+      if (*num_inode == 2 || *num_inode == NULL_INODO)
+      {
+         directorio++;
+         continue;
+      }
+      if (strcmp(existingname, nombreantiguo) == 0)
+      {
+         // printf("The name exists\n");
+         name_exists = 1;
+         break;
+      }
+      directorio++;
+   }
+   if (!name_exists)
+   {
+      printf("The filename %s doesn't exist!\n", nombreantiguo);
+      return 1;
+   }
+
+   EXT_ENTRADA_DIR *new_name_entry = directorio;
+   directorio = directorioStart;
+
+   while (directorio->dir_inodo != NULL_INODO)
+   {
+      unsigned short int *num_inode = &directorio->dir_inodo;
+      char *existingname = directorio->dir_nfich;
+      if (*num_inode == 2 || *num_inode == NULL_INODO)
+      {
+         directorio++;
+         continue;
+      }
+      if (strcmp(existingname, nombrenuevo) == 0)
+      {
+         printf("The file with name: %s already exists\n", nombrenuevo);
+         return 1;
+      }
+      directorio++;
+   }
+   strcpy(new_name_entry->dir_nfich, nombrenuevo);
+   // printf("new name: %s", new_name_entry->dir_nfich);
 }
