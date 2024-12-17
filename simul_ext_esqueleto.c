@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -11,14 +10,20 @@
 //let us begin with the first and most essential function
 int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2);
 
+// The second one will be the LeeSuperbloque Printbytemaps command
 void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps);
 void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup);
-/*
-int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
-              char *nombre);
+
+// Third and the fourth easy ones: 
 void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos);
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
               char *nombreantiguo, char *nombrenuevo);
+
+/*
+int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
+              char *nombre);
+
+
 int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
              EXT_DATOS *memdatos, char *nombre);
 int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
@@ -47,6 +52,7 @@ int main()
    EXT_BYTE_MAPS ext_bytemaps;
    EXT_BLQ_INODOS ext_blq_inodos;
    EXT_ENTRADA_DIR directorio[MAX_FICHEROS];
+   /*
    EXT_DATOS memdatos[MAX_BLOQUES_DATOS];
    EXT_DATOS datosfich[MAX_BLOQUES_PARTICION];
    int entradadir;
@@ -65,7 +71,7 @@ int main()
    memcpy(&ext_bytemaps,(EXT_BLQ_INODOS *)&datosfich[1], SIZE_BLOQUE);
    memcpy(&ext_blq_inodos,(EXT_BLQ_INODOS *)&datosfich[2], SIZE_BLOQUE);
    memcpy(&memdatos,(EXT_DATOS *)&datosfich[4],MAX_BLOQUES_DATOS*SIZE_BLOQUE);
-   
+   */
      
    // main loop
    for (;;){
@@ -130,7 +136,7 @@ int main()
 int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2)
 {
    //we read the command and check
-   //in case it doesnt match anything we just return a message
+   //incase it doesnt match anything we just return a message
    //the while will keep asking until its !=0
    //and we return 0
    
@@ -150,30 +156,14 @@ int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2)
          return 1;
       }
    }
-   printf("Syntax error the command '%s' doesnt exist\n",strcomando);
+   printf("Syntax error the comand '%s' doesnt exist\n",strcomando);
    return 0; //for the loop to proceed
 }
 
-void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup)
-{
-    printf("Block %d Bytes\n", psup->s_block_size);
-    printf("inodes in patrition = %d\n", psup->s_inodes_count);
-    printf("empty inodes = %d\n", psup->s_free_inodes_count);
-    printf("Blocks in patrition = %d\n", psup->s_blocks_count);
-    printf("Free blocks = %d\n", psup->s_free_blocks_count);
-    printf("First block containing data = %d\n", psup->s_first_data_block);
+
+void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup){
+
 }
 
-void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps)
-{
-    printf("Inodes: ");
-    for (int i = 0; i < MAX_INODOS; i++)
-    {
-        ext_bytemaps->bmap_inodos[i] == 0 ? printf("0 ") : printf("1 ");
-    }
-    printf("\nBlocks  [0-25]: ");
-    for (int i = 0; i <= 25; i++)
-    {
-        ext_bytemaps->bmap_bloques[i] == 0 ? printf("0 ") : printf("1 ");
-    }
-}
+void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps){}
+

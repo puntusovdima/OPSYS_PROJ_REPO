@@ -3,8 +3,8 @@
 #define MAX_FICHEROS 20
 #define MAX_BLOQUES_DATOS 96
 #define PRIM_BLOQUE_DATOS 4
-#define MAX_BLOQUES_PARTICION MAX_BLOQUES_DATOS+PRIM_BLOQUE_DATOS
   //superbloque + bytemap inodos y bytemap bloques + inodos + directorio
+#define MAX_BLOQUES_PARTICION MAX_BLOQUES_DATOS+PRIM_BLOQUE_DATOS
 #define MAX_NUMS_BLOQUE_INODO 7
 #define LEN_NFICH 17
 #define NULL_INODO 0xFFFF
