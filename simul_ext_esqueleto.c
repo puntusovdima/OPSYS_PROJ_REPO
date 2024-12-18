@@ -108,7 +108,6 @@ int main()
             tk = strtok(NULL, " ");
          }
       } while (ComprobarCommando(comando, argumento1, argumento2) != 1);
-      // printf("command exists\n");
 
       if (strcmp(comando, "info") == 0)
       {
@@ -142,14 +141,14 @@ int main()
          if (grabardatos)
          GrabarDatos(&memdatos,fent);
          grabardatos = 0;
-
+         */
          //if the command is 'salir' (exit in english) we exit duh
          //we need the data and we close
-         if (strcmp(orden,"salir")==0){
-            GrabarDatos(&memdatos,fent);
+         if (strcmp(comando,"exit")==0){
+            //GrabarDatos(&memdatos,fent);
             fclose(fent);
             return 0;
-         }*/
+         }
       // we free the user input
    }
 }
@@ -298,3 +297,4 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
    strcpy(new_name_entry->dir_nfich, nombrenuevo);
    // printf("new name: %s", new_name_entry->dir_nfich);
 }
+
