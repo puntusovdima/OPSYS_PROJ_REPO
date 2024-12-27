@@ -22,17 +22,20 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
 int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
              EXT_DATOS *memdatos, char *nombre);
 
-/*
-int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
-              char *nombre);
-
-
+// Those are the hard ones?
 int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre,  FILE *fich);
 int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
+
+/*
+int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+              char *nombre);
+
+
+
 void Grabarinodosydirectorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, FILE *fich);
 void GrabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich);
 void GrabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich);
@@ -184,7 +187,8 @@ int ComprobarCommando(char *strcomando, char *argumento1, char *argumento2)
          return 1;
       }
    }
-   printf("Syntax error the comand '%s' doesnt exist\n", strcomando);
+
+   printf("ERROR: Illegal command '%s'. [info, bytemaps, dir, rename, print, remove, copy, exit]\n", strcomando);
    return 0; // for the loop to proceed
 }
 
