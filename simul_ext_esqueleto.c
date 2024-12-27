@@ -137,6 +137,10 @@ int main()
       {
          Imprimir(directorio, &ext_blq_inodos, memdatos, argumento1);
       }
+      if (strcmp(comando, "remove") == 0)
+      {
+         Borrar(directorio, &ext_blq_inodos, &ext_bytemaps, &ext_superblock , argumento1, fent);
+      }
       /*if (strcmp(*orden,"dir")==0) {
             Directorio(&directorio,&ext_blq_inodos);
             continue;
@@ -220,29 +224,29 @@ void Printbytemaps(EXT_BYTE_MAPS *ext_bytemaps)
 
 void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
 {
+    // We need to iterate over MAX_FICHEROS (total entries in the directory)
+    for (int i = 0; i < MAX_FICHEROS; i++) {
+        // Check if the inode is NULL or reserved (e.g., inode 2 is often reserved as root)
+        unsigned short int num_inode = directorio[i].dir_inodo;
+        
+        if (num_inode == 2 || num_inode == NULL_INODO) {
+            continue; // Skip if inode is NULL or reserved
+        }
 
-   while (directorio->dir_inodo != NULL_INODO)
-   {
-      unsigned short int num_inode = directorio->dir_inodo;
-      if (num_inode == 2 || num_inode == NULL_INODO)
-      {
-         directorio++;
-         continue;
-      }
-      printf("%s\t", directorio->dir_nfich);
-      printf("size: %d\t", inodos->blq_inodos[num_inode].size_fichero);
-      printf("inode: %d\t", directorio->dir_inodo);
-      printf("blocks: ");
-      // unsigned short int *num_block = &inodos->blq_inodos[num_inode].i_nbloque[0];
-      int j = 0;
-      while (inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE)
-      {
-         printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
-         j++;
-      }
-      printf("\n");
-      directorio++;
-   }
+        // Print filename and inode information
+        printf("%s\t", directorio[i].dir_nfich);
+        printf("size: %d\t", inodos->blq_inodos[num_inode].size_fichero);
+        printf("inode: %d\t", directorio[i].dir_inodo);
+        printf("blocks: ");
+
+        // Loop through the blocks used by this inode
+        int j = 0;
+        while (inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE) {
+            printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
+            j++;
+        }
+        printf("\n");
+    }
 }
 
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
@@ -360,4 +364,57 @@ int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
    if (len > 0 && last_block[len - 1] != '\n')
       printf("\n");
    return 0;
+}
+
+int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+           EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
+           char *nombre,  FILE *fich)
+{
+   //we first find the file we want to delete
+   int exists = 0;
+   while (directorio->dir_inodo != NULL_INODO)
+   {
+      unsigned short int *num_inode = &directorio->dir_inodo;
+      char *existingname = directorio->dir_nfich;
+      if (*num_inode == 2 || *num_inode == NULL_INODO)
+      {
+         directorio++;
+         continue;
+      }
+      if (strcmp(existingname, nombre) == 0)
+      {
+         exists = 1;
+         break;
+      }
+      directorio++;
+   }
+
+   //we check it exists if not we return back error
+   if(exists == 0){
+      return 0;
+   }
+
+   //first off we update the bytemap
+   //setting the inode to 0
+   ext_bytemaps->bmap_inodos[directorio->dir_inodo] = 0;
+   int i;
+   //setting the blocks used to 0
+   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
+      if(inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i] != NULL_BLOQUE){
+         ext_bytemaps->bmap_bloques[inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i]] = 0;
+      }
+   }
+
+   //now we set the inode size to 0 and the blocks used
+   inodos->blq_inodos[directorio->dir_inodo].size_fichero = 0;
+   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
+      inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i] = NULL_BLOQUE;
+   }
+   
+   
+   //finally we delete the directory entry
+   strcpy(directorio->dir_nfich, ""); //setting the name to nothing
+   directorio->dir_inodo = NULL_INODO;
+   
+   return 1; //success
 }
