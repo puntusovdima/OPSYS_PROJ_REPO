@@ -18,14 +18,15 @@ void LeeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup);
 void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos);
 int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
               char *nombreantiguo, char *nombrenuevo);
+// This one was actually very easy as well:
+int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+             EXT_DATOS *memdatos, char *nombre);
 
 /*
 int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
               char *nombre);
 
 
-int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
-             EXT_DATOS *memdatos, char *nombre);
 int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre,  FILE *fich);
@@ -129,6 +130,10 @@ int main()
          Renombrar(directorio, &ext_blq_inodos, argumento1, argumento2);
          continue;
       }
+      if (strcmp(comando, "print") == 0)
+      {
+         Imprimir(directorio, &ext_blq_inodos, memdatos, argumento1);
+      }
       /*if (strcmp(*orden,"dir")==0) {
             Directorio(&directorio,&ext_blq_inodos);
             continue;
@@ -142,13 +147,14 @@ int main()
          GrabarDatos(&memdatos,fent);
          grabardatos = 0;
          */
-         //if the command is 'salir' (exit in english) we exit duh
-         //we need the data and we close
-         if (strcmp(comando,"exit")==0){
-            //GrabarDatos(&memdatos,fent);
-            fclose(fent);
-            return 0;
-         }
+      // if the command is 'salir' (exit in english) we exit duh
+      // we need the data and we close
+      if (strcmp(comando, "exit") == 0)
+      {
+         // GrabarDatos(&memdatos,fent);
+         fclose(fent);
+         return 0;
+      }
       // we free the user input
    }
 }
@@ -222,10 +228,9 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
       printf("%s\t", directorio->dir_nfich);
       printf("size: %d\t", inodos->blq_inodos[num_inode].size_fichero);
       printf("inode: %d\t", directorio->dir_inodo);
-      int j = 0;
       printf("blocks: ");
-      unsigned short int *num_block = &inodos->blq_inodos[num_inode].i_nbloque[0];
-
+      // unsigned short int *num_block = &inodos->blq_inodos[num_inode].i_nbloque[0];
+      int j = 0;
       while (inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE)
       {
          printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
@@ -295,6 +300,60 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
       directorio++;
    }
    strcpy(new_name_entry->dir_nfich, nombrenuevo);
-   // printf("new name: %s", new_name_entry->dir_nfich);
 }
 
+int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+             EXT_DATOS *memdatos, char *nombre)
+{
+   int name_exists = 0;
+   while (directorio->dir_inodo != NULL_INODO)
+   {
+      unsigned short int *num_inode = &directorio->dir_inodo;
+      char *existingname = directorio->dir_nfich;
+      if (*num_inode == 2 || *num_inode == NULL_INODO)
+      {
+         directorio++;
+         continue;
+      }
+      if (strcmp(existingname, nombre) == 0)
+      {
+         name_exists = 1;
+         break;
+      }
+      else
+      {
+         directorio++;
+      }
+   }
+   if (!name_exists)
+   {
+      printf("ERROR(Print): The filename %s doesn't exist!\n", nombre);
+      return 1;
+   }
+
+   EXT_ENTRADA_DIR *entry_to_print = directorio;
+   int blocks_to_print[MAX_NUMS_BLOQUE_INODO + 1];
+   unsigned short int num_inode = directorio->dir_inodo;
+   unsigned short int *num_block = inodos->blq_inodos[num_inode].i_nbloque;
+
+   int i = 0;
+   while (*num_block != NULL_BLOQUE)
+   {
+      blocks_to_print[i] = *num_block;
+      num_block++;
+      i++;
+   }
+
+   blocks_to_print[i] = NULL_BLOQUE;
+   for (int j = 0; j < i; j++)
+   {
+      printf("%s", memdatos[blocks_to_print[j] - PRIM_BLOQUE_DATOS]);
+   }
+   // Get length of the last block content
+   char *last_block = (char *)&memdatos[blocks_to_print[i - 1] - PRIM_BLOQUE_DATOS];
+   int len = strlen(last_block);
+   // We add newline character only if the content doesn't have it
+   if (len > 0 && last_block[len - 1] != '\n')
+      printf("\n");
+   return 0;
+}

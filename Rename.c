@@ -14,6 +14,7 @@ int main()
     EXT_ENTRADA_DIR directorio[MAX_FICHEROS];
 
     EXT_BLQ_INODOS ext_blq_inodos;
+    
 
     FILE *fent;
     char *oldname, *newname;
@@ -119,3 +120,4 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
         directorio++;
     }
 }
+
