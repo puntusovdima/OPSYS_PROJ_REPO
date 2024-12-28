@@ -429,18 +429,59 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich)
 {
    int o_exists = 0;
-   for (int i = 0; i < MAX_FICHEROS; i++) {
+   int i;
+   for (i = 0; i < MAX_FICHEROS; i++) {
       unsigned short int num_inode = directorio[i].dir_inodo;
       if (num_inode == 2 || num_inode == NULL_INODO) {
          continue; // Skip if inode is NULL or reserved
       }
       if (strcmp(directorio[i].dir_nfich,nombreorigen) == 0){
          o_exists = 1;
+         break;
       }
    }
-
    if(!o_exists){
       printf("file %s does not exist\n",nombreorigen);
       return 0;
+   }int origin = i; //being the file we copy from
+
+   //first we find the first available inode
+   i=0;
+   
+   for(i=0;i<MAX_INODOS;i++){
+      if(ext_bytemaps->bmap_inodos[i] == NULL_INODO && ext_bytemaps->bmap_inodos[i] != 2){
+         break;
+      }
    }
+   ext_bytemaps->bmap_inodos[i] = 1; //we will put the inode here
+   int to_inode = i;
+
+   i=0;
+   //second we find the first available directory
+   do{
+      i++;
+   }
+   while(directorio[i].dir_inodo != NULL_INODO || directorio[i].dir_inodo == 2);
+   int to_dir = i; //the destination where we will copy
+
+   strcpy(directorio[to_dir].dir_nfich,nombredestino); //we assign the name
+   directorio[to_dir].dir_inodo = to_inode;
+
+   //we copy the size_fichero
+   inodos->blq_inodos[directorio[to_dir].dir_inodo].size_fichero = inodos->blq_inodos[directorio[origin].dir_inodo].size_fichero;
+   
+   //how many blocks do we have?
+   int to_blocks = 0;
+   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
+      if(inodos->blq_inodos[directorio[origin].dir_inodo].i_nbloque[i] != NULL_BLOQUE){
+         to_blocks++;
+      }
+   }
+   /*
+   int to_alloc[to_blocks];
+   int to_in = 0;
+   for(i=0;to_in<to_blocks;i++){
+      if(ext_bytemaps->bmap_bloques[i] == NULL_BLOQUE){
+      }
+   }*/
 }
