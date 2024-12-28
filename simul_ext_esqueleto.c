@@ -26,6 +26,7 @@ int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
 int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre,  FILE *fich);
+
 int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
@@ -140,6 +141,11 @@ int main()
       if (strcmp(comando, "remove") == 0)
       {
          Borrar(directorio, &ext_blq_inodos, &ext_bytemaps, &ext_superblock , argumento1, fent);
+      }
+      if (strcmp(comando, "copy") == 0)
+      {
+         Copiar(directorio, &ext_blq_inodos, &ext_bytemaps, &ext_superblock,
+         memdatos, argumento1, argumento2, fent);
       }
       /*if (strcmp(*orden,"dir")==0) {
             Directorio(&directorio,&ext_blq_inodos);
@@ -370,51 +376,71 @@ int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre,  FILE *fich)
 {
-   //we first find the file we want to delete
+   // Find the file we want to delete
    int exists = 0;
-   while (directorio->dir_inodo != NULL_INODO)
-   {
-      unsigned short int *num_inode = &directorio->dir_inodo;
-      char *existingname = directorio->dir_nfich;
-      if (*num_inode == 2 || *num_inode == NULL_INODO)
-      {
-         directorio++;
-         continue;
+   int j = -1; 
+
+   for (int i = 0; i < MAX_FICHEROS; i++) {
+      unsigned short int num_inode = directorio[i].dir_inodo;
+      if (num_inode == 2 || num_inode == NULL_INODO) {
+         continue; // Skip if inode is NULL or reserved
       }
-      if (strcmp(existingname, nombre) == 0)
-      {
+      if (strcmp(directorio[i].dir_nfich, nombre) == 0) {
          exists = 1;
-         break;
+         j = i; // Save the index of the matching file
+         break; // Exit loop since we've found the file
       }
-      directorio++;
    }
 
-   //we check it exists if not we return back error
-   if(exists == 0){
+   if (!exists || j == -1) {
+   printf("file %s does not exist\n",nombre);
+      return 0; // File not found, return error
+   }
+
+   // Update the bytemap: set the inode to 0
+   unsigned short int file_inode = directorio[j].dir_inodo;
+   ext_bytemaps->bmap_inodos[file_inode] = 0;
+
+   // Set the blocks used by this inode to 0 in the block bitmap
+   for (int i = 0; i < MAX_NUMS_BLOQUE_INODO; i++) {
+      unsigned short int block_num = inodos->blq_inodos[file_inode].i_nbloque[i];
+      if (block_num != NULL_BLOQUE) {
+            ext_bytemaps->bmap_bloques[block_num] = 0;
+      }
+   }
+
+    // Clear the inode: set its size to 0 and all blocks to NULL_BLOQUE
+   inodos->blq_inodos[file_inode].size_fichero = 0;
+   for (int i = 0; i < MAX_NUMS_BLOQUE_INODO; i++) {
+        inodos->blq_inodos[file_inode].i_nbloque[i] = NULL_BLOQUE;
+   }
+
+
+    // Delete the directory entry: clear the name and inode
+    strcpy(directorio[j].dir_nfich, "");
+    directorio[j].dir_inodo = NULL_INODO;
+
+    return 1; // Success
+}
+
+
+int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
+           EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
+           EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich)
+{
+   int o_exists = 0;
+   for (int i = 0; i < MAX_FICHEROS; i++) {
+      unsigned short int num_inode = directorio[i].dir_inodo;
+      if (num_inode == 2 || num_inode == NULL_INODO) {
+         continue; // Skip if inode is NULL or reserved
+      }
+      if (strcmp(directorio[i].dir_nfich,nombreorigen) == 0){
+         o_exists = 1;
+      }
+   }
+
+   if(!o_exists){
+      printf("file %s does not exist\n",nombreorigen);
       return 0;
    }
-
-   //first off we update the bytemap
-   //setting the inode to 0
-   ext_bytemaps->bmap_inodos[directorio->dir_inodo] = 0;
-   int i;
-   //setting the blocks used to 0
-   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
-      if(inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i] != NULL_BLOQUE){
-         ext_bytemaps->bmap_bloques[inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i]] = 0;
-      }
-   }
-
-   //now we set the inode size to 0 and the blocks used
-   inodos->blq_inodos[directorio->dir_inodo].size_fichero = 0;
-   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
-      inodos->blq_inodos[directorio->dir_inodo].i_nbloque[i] = NULL_BLOQUE;
-   }
-   
-   
-   //finally we delete the directory entry
-   strcpy(directorio->dir_nfich, ""); //setting the name to nothing
-   directorio->dir_inodo = NULL_INODO;
-   
-   return 1; //success
 }
