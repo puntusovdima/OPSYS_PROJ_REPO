@@ -465,7 +465,7 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
 
     for (i = 0; i < MAX_INODOS; i++)
     {
-        if (ext_bytemaps->bmap_inodos[i] == NULL_INODO && ext_bytemaps->bmap_inodos[i] != 2)
+        if (ext_bytemaps->bmap_inodos[i] == 0 && (i != 2))
         {
             break;
         }
