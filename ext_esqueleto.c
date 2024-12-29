@@ -160,6 +160,9 @@ int main()
             return 0;
         }
         // we free the user input
+        strcpy(comando, "");
+        strcpy(argumento1, "");
+        strcpy(argumento2, "");
     }
     fclose(fent); // just in case(debuggin reasons)
 }
@@ -228,6 +231,7 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
         // Check if the inode is NULL or reserved (e.g., inode 2 is often reserved as root)
         unsigned short int num_inode = directorio[i].dir_inodo;
 
+        
         if (num_inode == 2 || num_inode == NULL_INODO)
         {
             continue; // Skip if inode is NULL or reserved
@@ -311,6 +315,11 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
 int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
              EXT_DATOS *memdatos, char *nombre)
 {
+    if (nombre[0] == '\0')
+    {
+        printf("ERROR(Print): incorrect argument, put a file name to print\n");
+        return 1;
+    }
     int name_exists = 0;
     int i;
     for (i = 0; i < MAX_FICHEROS; i++)
@@ -364,22 +373,27 @@ int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            char *nombre, FILE *fich)
 {
+    if (nombre[0] == '\0')
+    {
+        printf("ERROR(Print): incorrect argument, put a file name to remove\n");
+        return 1;
+    }
     // Find the file we want to delete
     int exists = 0;
     int j = -1;
-    unsigned char *entry = ext_bytemaps->bmap_inodos;
-
+    unsigned char *entry_bm_inodes = ext_bytemaps->bmap_inodos;
+    // printf("Inodes: %d %d %d %d %d %d\n", entry[0], entry[1], entry[2], entry[3], entry[4], entry[5]);
     for (int i = 0; i < MAX_FICHEROS; i++)
     {
         unsigned short int num_inode = directorio[i].dir_inodo;
-        // if (entry[i] == 0 || i <= 2)
-        // {
-        //     continue; // Skip if inode is NULL or reserved
-        // }
-        if (num_inode == 2 || num_inode == NULL_INODO)
+        if (entry_bm_inodes[i + 1] == 0 || (i + 1) <= 2)
         {
             continue; // Skip if inode is NULL or reserved
         }
+        // if (num_inode == 2 || num_inode == NULL_INODO)
+        // {
+        //     continue; // Skip if inode is NULL or reserved
+        // }
         if (strcmp(directorio[i].dir_nfich, nombre) == 0)
         {
             exists = 1;
