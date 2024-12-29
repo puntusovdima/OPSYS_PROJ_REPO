@@ -31,11 +31,8 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
 
-
-void Grabarinodosydirectorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, FILE *fich);
-void GrabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich);
-void GrabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich);
-void GrabarDatos(EXT_DATOS *memdatos, FILE *fich);
+void GrabarDatos(EXT_DATOS *memdatos,EXT_ENTRADA_DIR *directorio,EXT_BLQ_INODOS *inodos, 
+                 EXT_BYTE_MAPS *ext_bytemaps,EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich,EXT_DATOS *datosfich);
 
 
 int main()
@@ -159,7 +156,7 @@ int main()
       // we need the data and we close
       if (strcmp(comando, "exit") == 0)
       {
-         // GrabarDatos(&memdatos,fent);
+         GrabarDatos(memdatos,directorio,&ext_blq_inodos,&ext_bytemaps,&ext_superblock,fent,datosfich);
          fclose(fent);
          return 0;
       }
@@ -525,3 +522,20 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
    }
 }
 
+void GrabarDatos(EXT_DATOS *memdatos, EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
+                 EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich,EXT_DATOS *datosfich) 
+{
+    memcpy(&datosfich[0].dato, ext_superblock, sizeof(EXT_SIMPLE_SUPERBLOCK));
+    memcpy(&datosfich[1].dato, ext_bytemaps, sizeof(EXT_BYTE_MAPS));
+    memcpy(&datosfich[2].dato, inodos, sizeof(EXT_BLQ_INODOS));
+    memcpy(&datosfich[3].dato, directorio, sizeof(EXT_ENTRADA_DIR) * MAX_FICHEROS);  // MAX_FICHEROS directories
+
+    for (int i = 0; i < MAX_BLOQUES_DATOS; i++) {
+        memcpy(&datosfich[PRIM_BLOQUE_DATOS + i].dato, memdatos[i].dato, SIZE_BLOQUE);
+    }
+
+    fseek(fich, 0, SEEK_SET);
+    fwrite(datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fich);
+
+    fflush(fich);
+}
