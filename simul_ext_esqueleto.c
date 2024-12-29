@@ -555,14 +555,17 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
     // we now have to populate said memory
     // similar to 'print'
 
-    for (i = 0; i < to_blocks; i++)
-    {
+   for (i = 0; i < to_blocks; i++)
+   {
         // Calculate source and destination block indices directly
         int source_block = inodos->blq_inodos[directorio[origin].dir_inodo].i_nbloque[i];
         int dest_block = inodos->blq_inodos[directorio[to_dir].dir_inodo].i_nbloque[i];
 
         memcpy((char *)&memdatos[dest_block - PRIM_BLOQUE_DATOS].dato, (char *)&memdatos[source_block - PRIM_BLOQUE_DATOS].dato, SIZE_BLOQUE);
-    }
+   }
+
+   ext_superblock->s_free_blocks_count -= to_blocks; //will substract n blocks
+   ext_superblock->s_free_inodes_count -= 1; //since we only add one inode
 }
 
 void GrabarDatos(EXT_DATOS *memdatos, EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
