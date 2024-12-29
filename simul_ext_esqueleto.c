@@ -31,17 +31,9 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
            EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock,
            EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
 
-/*
-int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
-              char *nombre);
+void GrabarDatos(EXT_DATOS *memdatos,EXT_ENTRADA_DIR *directorio,EXT_BLQ_INODOS *inodos, 
+                 EXT_BYTE_MAPS *ext_bytemaps,EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich,EXT_DATOS *datosfich);
 
-
-
-void Grabarinodosydirectorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, FILE *fich);
-void GrabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich);
-void GrabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich);
-void GrabarDatos(EXT_DATOS *memdatos, FILE *fich);
-*/
 
 int main()
 {
@@ -164,7 +156,7 @@ int main()
       // we need the data and we close
       if (strcmp(comando, "exit") == 0)
       {
-         // GrabarDatos(&memdatos,fent);
+         GrabarDatos(memdatos,directorio,&ext_blq_inodos,&ext_bytemaps,&ext_superblock,fent,datosfich);
          fclose(fent);
          return 0;
       }
@@ -272,13 +264,13 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
    }
    EXT_ENTRADA_DIR *directorioStart = directorio;
    int name_exists = 0;
-   while (directorio->dir_inodo != NULL_INODO)
+   int i=0;
+   for(i=0;i<MAX_FICHEROS;i++)
    {
-      unsigned short int *num_inode = &directorio->dir_inodo;
-      char *existingname = directorio->dir_nfich;
+      unsigned short int *num_inode = &directorio[i].dir_inodo;
+      char *existingname = directorio[i].dir_nfich;
       if (*num_inode == 2 || *num_inode == NULL_INODO)
       {
-         directorio++;
          continue;
       }
       if (strcmp(existingname, nombreantiguo) == 0)
@@ -287,7 +279,6 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
          name_exists = 1;
          break;
       }
-      directorio++;
    }
    if (!name_exists)
    {
@@ -295,16 +286,14 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
       return 1;
    }
 
-   EXT_ENTRADA_DIR *new_name_entry = directorio;
-   directorio = directorioStart;
+   EXT_ENTRADA_DIR *new_name_entry = &directorio[i];
 
-   while (directorio->dir_inodo != NULL_INODO)
+   for (i=0;i<MAX_FICHEROS;i++)
    {
-      unsigned short int *num_inode = &directorio->dir_inodo;
-      char *existingname = directorio->dir_nfich;
+      unsigned short int *num_inode = &directorio[i].dir_inodo;
+      char *existingname = directorio[i].dir_nfich;
       if (*num_inode == 2 || *num_inode == NULL_INODO)
       {
-         directorio++;
          continue;
       }
       if (strcmp(existingname, nombrenuevo) == 0)
@@ -312,7 +301,7 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
          printf("The file with name: %s already exists\n", nombrenuevo);
          return 1;
       }
-      directorio++;
+
    }
    strcpy(new_name_entry->dir_nfich, nombrenuevo);
 }
@@ -321,23 +310,19 @@ int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
              EXT_DATOS *memdatos, char *nombre)
 {
    int name_exists = 0;
-   while (directorio->dir_inodo != NULL_INODO)
+   int i;
+   for (i=0;i<MAX_FICHEROS;i++)
    {
-      unsigned short int *num_inode = &directorio->dir_inodo;
-      char *existingname = directorio->dir_nfich;
+      unsigned short int *num_inode = &directorio[i].dir_inodo;
+      char *existingname = directorio[i].dir_nfich;
       if (*num_inode == 2 || *num_inode == NULL_INODO)
       {
-         directorio++;
          continue;
       }
       if (strcmp(existingname, nombre) == 0)
       {
          name_exists = 1;
          break;
-      }
-      else
-      {
-         directorio++;
       }
    }
    if (!name_exists)
@@ -346,12 +331,12 @@ int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
       return 1;
    }
 
-   EXT_ENTRADA_DIR *entry_to_print = directorio;
+   EXT_ENTRADA_DIR *entry_to_print = &directorio[i];
    int blocks_to_print[MAX_NUMS_BLOQUE_INODO + 1];
-   unsigned short int num_inode = directorio->dir_inodo;
+   unsigned short int num_inode = directorio[i].dir_inodo;
    unsigned short int *num_block = inodos->blq_inodos[num_inode].i_nbloque;
 
-   int i = 0;
+   i = 0;
    while (*num_block != NULL_BLOQUE)
    {
       blocks_to_print[i] = *num_block;
@@ -535,4 +520,22 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
 
       memcpy((char*)&memdatos[dest_block-PRIM_BLOQUE_DATOS].dato,(char*)&memdatos[source_block-PRIM_BLOQUE_DATOS].dato,SIZE_BLOQUE);
    }
+}
+
+void GrabarDatos(EXT_DATOS *memdatos, EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, 
+                 EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich,EXT_DATOS *datosfich) 
+{
+    memcpy(&datosfich[0].dato, ext_superblock, sizeof(EXT_SIMPLE_SUPERBLOCK));
+    memcpy(&datosfich[1].dato, ext_bytemaps, sizeof(EXT_BYTE_MAPS));
+    memcpy(&datosfich[2].dato, inodos, sizeof(EXT_BLQ_INODOS));
+    memcpy(&datosfich[3].dato, directorio, sizeof(EXT_ENTRADA_DIR) * MAX_FICHEROS);  // MAX_FICHEROS directories
+
+    for (int i = 0; i < MAX_BLOQUES_DATOS; i++) {
+        memcpy(&datosfich[PRIM_BLOQUE_DATOS + i].dato, memdatos[i].dato, SIZE_BLOQUE);
+    }
+
+    fseek(fich, 0, SEEK_SET);
+    fwrite(datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fich);
+
+    fflush(fich);
 }
