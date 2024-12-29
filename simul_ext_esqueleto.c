@@ -245,12 +245,13 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
         printf("inode: %d\t", directorio[i].dir_inodo);
         printf("blocks: ");
 
-        // Loop through the blocks used by this inode
-        int j = 0;
-        while (inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE) {
-            printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
-            j++;
-        }
+         // Loop through the blocks used by this inode
+         for (int j=0;j<MAX_NUMS_BLOQUE_INODO;j++) {
+            if(inodos->blq_inodos[num_inode].i_nbloque[j] != NULL_BLOQUE){
+               printf(" %d ", inodos->blq_inodos[num_inode].i_nbloque[j]);
+            }
+
+         }
         printf("\n");
     }
 }
@@ -477,11 +478,61 @@ int Copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos,
          to_blocks++;
       }
    }
-   /*
-   int to_alloc[to_blocks];
-   int to_in = 0;
-   for(i=0;to_in<to_blocks;i++){
-      if(ext_bytemaps->bmap_bloques[i] == NULL_BLOQUE){
+
+   int from_alloc[to_blocks];
+   int from_alloc_n = 0;
+   for(i=0;i<MAX_NUMS_BLOQUE_INODO;i++){
+      if(inodos->blq_inodos[directorio[origin].dir_inodo].i_nbloque[i] != NULL_BLOQUE){
+         from_alloc[from_alloc_n] = i;
+         from_alloc_n++;
+         if(from_alloc_n >= to_blocks){
+            break;
+         }
       }
-   }*/
+   }
+
+   int to_alloc[to_blocks];
+   int to_alloc_n = 0;
+
+   //finding the n free blocks
+   for (i = 0; i < MAX_BLOQUES_PARTICION; i++) {
+      if (ext_bytemaps->bmap_bloques[i] == 0) {
+         to_alloc[to_alloc_n] = i; // Store block number
+         to_alloc_n++;
+         if (to_alloc_n >= to_blocks) break; // Stop when enough blocks are found
+      }
+   }
+
+   // Check if we found enough blocks
+   if (to_alloc_n < to_blocks) {
+      printf("Error: Not enough free blocks available\n");
+      return 0;
+   }
+
+   // Allocate blocks to the inode
+   // Set unused entries in inode to NULL_BLOQUE
+   for (i = to_blocks; i < MAX_NUMS_BLOQUE_INODO; i++) {
+      inodos->blq_inodos[directorio[to_dir].dir_inodo].i_nbloque[i] = NULL_BLOQUE;
+   }
+
+   for (i = 0; i < to_blocks; i++) {
+
+      // Mark block as used in the bytemap
+      ext_bytemaps->bmap_bloques[to_alloc[i]] = 1;
+
+      // Assign block number to the inode block array
+      inodos->blq_inodos[directorio[to_dir].dir_inodo].i_nbloque[i] = to_alloc[i];
+   }
+
+   //this finalizes the memory allocation
+   //we now have to populate said memory
+   //similar to 'print'
+
+   for (i = 0; i < to_blocks; i++) {
+      // Calculate source and destination block indices directly
+      int source_block = inodos->blq_inodos[directorio[origin].dir_inodo].i_nbloque[i];
+      int dest_block = inodos->blq_inodos[directorio[to_dir].dir_inodo].i_nbloque[i];
+
+      memcpy((char*)&memdatos[dest_block-PRIM_BLOQUE_DATOS].dato,(char*)&memdatos[source_block-PRIM_BLOQUE_DATOS].dato,SIZE_BLOQUE);
+   }
 }
